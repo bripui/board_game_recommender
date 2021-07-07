@@ -40,8 +40,8 @@ boardgames['designers'] = None
 boardgames['publishers'] = None
 
 restart = True
-restart_page = 297
-restart_id = 30549
+restart_page = 134
+restart_id = 463
 
 sleep_default = 2
 
