@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+    {% block content %}
+    <h1>Board Game Recommender!</h1>
+
+    Hello Board Game Geek!
+
+    Already a Geek?
+    <form action="/recommend">
+        <label><input type="text" placeholder='User Name' name="user_name"></label>
+        <button class="submitbutton">Submit</button>
+    </form>
+   
+   
+
+    {% endblock %}

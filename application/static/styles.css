@@ -1,0 +1,42 @@
+h2 {
+    color:darkslateblue;
+}
+
+body {
+    background-color: lavenderblush;
+    background-repeat: no-repeat;
+    background-size:cover;
+}
+
+button {
+    background: darkslateblue;
+}
+
+#transperentbox {
+    max-width: 800px;
+    margin: auto;
+    background-color: rgba(235, 220, 231, 0.769);
+}
+
+#contentbox{
+    max-width: 600px;
+    margin: auto; 
+}
+
+
+
+input[type='checkbox']{
+    width: 14px !important;
+    height: 14px !important;
+    margin: 5px;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    -o-appearance: none;
+    appearance: none;
+    outline: 1px solid gray;
+    box-shadow: none;
+    font-size: 0.8em;
+    text-align: center;
+    line-height: 1em;
+    background: red;
+  }
