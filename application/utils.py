@@ -1,21 +1,32 @@
 import pandas as pd
+import numpy as np
 
-boardgames = pd.read_csv('../data/boardgames.csv')
+boardgames = pd.read_csv('../data/boardgames.csv', index_col='id')
 
 #ratings_small has the correct header! ratings won't
-ratings = pd.read_csv('../data/ratings_small.csv')
+ratings = pd.read_csv('../data/ratings_cleaned.csv')
 
-users = pd.DataFrame(ratings.value_counts('user_name'), columns=['ratings'])
-user_ids = list(range(0,len(users)))
-users['user_id'] = user_ids
-users = users.set_index('user_name')
+def lookup_boardgame(ids):    
+    '''
+    converts boardgame ids into boardgame names
+    '''
+    return boardgames.loc[ids, 'name'].tolist()
 
-def select_users(n_ratings):
+def create_user_vector(user_name):
     '''
-    returns only users witch more than the defined number of ratings
+    returns a 1d array of the ratings of one user
+    unrated boardgames = 0
     '''
-    users[users['ratings'] > n_ratings]
-    return users['user_id']
+    user = create_user_ratings(user_name)
+    vector_length = ratings['boardgame_id'].max()
+    vector = np.repeat(0, vector_length+1)
+    vector[user['boardgame_id']] = user['ratings']
+    return vector
+
+def create_user_ratings(user_name):
+    user = ratings[ratings['user_name']==user_name]
+    return user
+
 
 
 
