@@ -3,7 +3,10 @@
     {% block content %}
 
 
-    <h2>Hi {{user_name[0]}}!!!</h2>
-   
+        <h2>Hi {{user_name}}!!!</h2>
+        {% for r in recommendations %}
+            <li> {{r}} </li>
+        {% endfor %}
 
+    <a href="{{ url_for('homepage') }}">Go back to main page</a>    
     {% endblock %}

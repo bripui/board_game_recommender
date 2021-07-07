@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+    {% block content %}
+
+
+        <h2>Hi Newbie!!!</h2>
+
+        <form action="/recommend">
+
+            {% for i in range(5)  %}
+            <fieldset class="flex two">
+                <label><input type="text" placeholder='boardgame title' name="movie"></label>
+                <label><input type="text" placeholder='rating 0-5' name="rating"></label>
+              </fieldset>
+           {% endfor %}
+           
+           <br>
+           <button class="myCoolButton">Submit</button>
+        </form>
+    
+
+
+        <a href="{{ url_for('homepage') }}">Go back to main page</a>    
+    {% endblock %}
