@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+    {% block content %}
+    <h1>Board Game Recommender!</h1>
+    <p>Welcome to the Board Game Recommender App. 
+        It is based on the data of <a href="https://boardgamegeek.com"> https://boardgamegeek.com </a></p>
+    <div class="flex two">
+        <div>
+          <article class="card">
+            <img src="../static/geek1.jpg">
+            <footer>
+                <h3>I'm already a geek!</h3>
+                <form action="/recommend">
+                    <label><input type="text" placeholder='User Name' name="user_name"></label>
+                    <button class="submitbutton">Submit</button>
+                </form>
+            </footer>
+          </article>
+        </div>
+        <div>
+          <article class="card">
+            <img src="../static/geek2.jpg">
+            <footer>
+                <h3>I'm a new geek!</h3>
+                <form action="/new_user_form">
+                <button class="submitbutton">Submit</button>
+                </form>
+            </footer>
+          </article>
+        </div>
+      </div>
+      
+
+    {% endblock %}
