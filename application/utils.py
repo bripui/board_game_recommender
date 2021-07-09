@@ -2,9 +2,7 @@ import pandas as pd
 import numpy as np
 
 boardgames = pd.read_csv('../data/boardgames.csv', index_col='id')
-boardgames_ext = pd.read_csv('../data/boardgames_extend_backup.csv')
-boardgames_ext['id'] = boardgames.index
-boardgames_ext = boardgames_ext.set_index('id')
+boardgames_ext = pd.read_csv('../data/boardgames_extend_backup.csv', index_col='id')
 
 ratings = pd.read_csv('../data/ratings_cleaned.csv')
 

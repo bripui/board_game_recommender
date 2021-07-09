@@ -3,7 +3,7 @@ import random
 import pickle
 from utils import boardgames, ratings, create_user_vector, lookup_boardgame, create_user_ratings
 
-with open('../models/small_model.pickle', 'rb') as file:
+with open('../models/knn_model_cosine.pickle', 'rb') as file:
     model = pickle.load(file)
 
 def random_recommender(N):
@@ -24,6 +24,8 @@ def neighbor_recommender(user_name):
     user_vector = create_user_vector(user_name)
     #create neigbors of user
     distances, neighbor_ids = model.kneighbors([user_vector], n_neighbors=10)
+    print(neighbor_ids)
+    print(distances)
     neighbor_filter = ratings['user_id'].isin(neighbor_ids[0][1:])
     #create mean retings of games, rated by the neighbors
     neighbor_ratings = ratings[neighbor_filter].groupby('boardgame_id').mean()

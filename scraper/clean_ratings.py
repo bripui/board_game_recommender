@@ -44,7 +44,7 @@ def clean_dataframe(ratings, n_ratings):
 if __name__ == "__main__":
 
     #ratings = pd.read_csv('../data/ratings_small.csv')
-    ratings = pd.read_csv('../data/ratings_backup.csv', 
+    ratings = pd.read_csv('../data/ratings.csv', 
                            usecols=[0,1,2], 
                            names=['boardgame_id', 'user_name', 'ratings', 'comments']
                            )
