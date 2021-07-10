@@ -1,10 +1,11 @@
 import pandas as pd
 import random
 import pickle
-from application.utils import create_user_vector, lookup_boardgame, create_user_ratings
+from application.utils import create_user_vector, lookup_boardgame, create_user_ratings, user_rated_boardgames, list_to_query
+from application.utils import engine
 
-#with open('../models/knn_model_cosine.pickle', 'rb') as file:
-#    model = pickle.load(file)
+with open('./models/knn_model_cosine.pickle', 'rb') as file:
+    model = pickle.load(file)
 
 def random_recommender(N):
     '''
@@ -22,16 +23,16 @@ def neighbor_recommender(user_name):
     '''
     user_ratings = create_user_ratings(user_name)
     user_vector = create_user_vector(user_name)
-    #create neigbors of user
     distances, neighbor_ids = model.kneighbors([user_vector], n_neighbors=10)
-    print(neighbor_ids)
-    print(distances)
-    neighbor_filter = ratings['user_id'].isin(neighbor_ids[0][1:])
-    #create mean retings of games, rated by the neighbors
-    neighbor_ratings = ratings[neighbor_filter].groupby('boardgame_id').mean()
-    #sort rated games by mean rating
-    neighbor_top = neighbor_ratings['ratings'].sort_values(ascending=False)
-    #remove games which user rated already
-    played_filter = ~neighbor_top.index.isin(user_ratings['boardgame_id'])
-    recommend_ids = neighbor_top[played_filter].index
-    return boardgames.loc[recommend_ids]['name'].tolist()[:10]
+    neighbor_ids = list_to_query(neighbor_ids[0])
+    boardgame_ids, boardgame_names, ratings = user_rated_boardgames(user_name)
+    boardgame_ids = list_to_query(boardgame_ids)
+    query = f'''
+        SELECT boardgames.boardgamename, AVG(ratings.rating) FROM ratings 
+        JOIN boardgames ON boardgames.boardgameid = ratings.boardgameid
+        WHERE ratings.userid IN({neighbor_ids}) AND ratings.boardgameid NOT IN ({boardgame_ids})
+        GROUP BY boardgames.boardgamename
+        ORDER BY avg DESC
+        LIMIT 20;
+        '''
+    return pd.read_sql(query, engine)['boardgamename'].tolist()

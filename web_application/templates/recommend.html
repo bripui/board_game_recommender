@@ -4,12 +4,11 @@
 
 
         <h2>Hi {{user_name}}!!!</h2>
-        {{aws_output}}
-       <!-- {% for r in recommendations %}
+        {% for r in recommendations %}
             <li> {{r}} </li>
         {% endfor %}
 
-        <h2>Did you know?</h2>
+       <!--  <h2>Did you know?</h2>
         <p>Your favorite boardgame categories are:</p>
         {% for category in users_top_categories %}
             <li> {{category}} </li>

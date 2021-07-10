@@ -11,21 +11,39 @@ import os
 
 #users = pd.read_csv('../data/users.csv')
 #load_env()
-uri = os.environ['CONNECT_AWS_POSTGRES_NORTHWIND']
+uri = os.environ['CONNECT_AWS_POSTGRES_BOARDGAMEGEEKS']
 engine = create_engine(uri, echo=False)#
+
+def list_to_query(ids):
+    ids_str = [str(i) for i in ids]
+    ids_str = ','.join(ids_str)
+    return ids_str
 
 def lookup_boardgame(ids):    
     '''
     converts boardgame ids into boardgame names
-    '''
-    return boardgames.loc[ids, 'name'].tolist()
+    '''    
+    ids_str = list_to_query(ids)
+    query = f'SELECT boardgamename FROM boardgames WHERE boardgameid IN ({ids_str});'
+    request = pd.read_sql(query, engine)
+    return request['boardgamename'].tolist()
 
 def lookup_user_id(user_name):
     '''
     returns the user id of a user
     '''
-    user_id = users[users['user_name']==user_name]['user_id'].tolist()[0]
+    query = f'''SELECT userid FROM users WHERE username = '{user_name}';'''
+    user_id = pd.read_sql(query, engine )['userid'][0]
     return user_id
+
+def create_user_ratings(user_name):
+    '''
+    returns a dataframe with rated boardgames for a specified user
+    '''
+    user_id = lookup_user_id(user_name)
+    query = f'''SELECT boardgameid,rating, userid FROM ratings WHERE userid = {user_id};'''
+    user = pd.read_sql(query, engine)
+    return user
 
 def create_user_vector(user_name):
     '''
@@ -33,21 +51,16 @@ def create_user_vector(user_name):
     unrated boardgames = 0
     '''
     user = create_user_ratings(user_name)
-    vector_length = ratings['boardgame_id'].max()
+    query = '''SELECT MAX(boardgameid) FROM boardgames;'''
+    vector_length = pd.read_sql(query, engine)['max'][0]
     vector = np.repeat(0, vector_length+1)
-    vector[user['boardgame_id']] = user['ratings']
+    vector[user['boardgameid']] = user['rating']
     return vector
-
-def create_user_ratings(user_name):
-    '''
-    returns a dataframe with rated boardgames for a specified user
-    '''
-    user_id = lookup_user_id(user_name)
-    user = ratings[ratings['user_id']==user_id]
-    return user
 
 def values_to_list(df, column_name):
     categories = []
+    query = f'''SELECT {column_name} FROM boardgames;'''
+    df = pd.read_sql(query, engine)
     for i in df[df[column_name].notna()].iterrows():
         categories = categories + i[1][column_name].split(', ')
     categories = list(dict.fromkeys(categories))
@@ -80,7 +93,16 @@ def ohe_user_boardgames(user_name, column, weight=False):
     df.columns = user_categories
     return df
 
-def print_aws():
-    query = 'SELECT * FROM products LIMIT 10'
+def user_rated_boardgames(user_name):
+    '''
+    returns lists of boardgame_id, boardgame_name and rating of users votes
+    '''
+    query = f'''
+        SELECT boardgames.boardgameid, boardgames.boardgamename, ratings.rating FROM boardgames
+        JOIN ratings ON ratings.boardgameid = boardgames.boardgameid
+        JOIN users ON users.userid = ratings.userid
+        WHERE users.username = '{user_name}'
+        ORDER BY ratings.rating DESC;
+        '''
     df = pd.read_sql(query, engine)
-    return df['productname'].tolist()
+    return df['boardgameid'].tolist(), df['boardgamename'].tolist(), df['rating'].tolist()
