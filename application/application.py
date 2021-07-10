@@ -1,6 +1,6 @@
 from flask import Flask,  request,  render_template
-from recommender import random_recommender, neighbor_recommender
-from utils import ohe_user_boardgames
+from application.recommender import random_recommender, neighbor_recommender, knn_nmf_recommender
+from application.utils import ohe_user_boardgames
 
 
 # here we construct a Flack object and the __name__ sets this script as the root
@@ -21,7 +21,7 @@ def recommend():
     user_name = request.args.getlist('user_name')[0]
     print(user_name)
     #recommendations = random_recommender(10)
-    recommendations = neighbor_recommender(user_name)
+    recommendations = knn_nmf_recommender(user_name)
     users_top_mechanics = ohe_user_boardgames(user_name, 'mechanics').sum().sort_values(ascending=False)[:5].index.tolist()
     print(users_top_mechanics)
     users_top_categories = ohe_user_boardgames(user_name, 'categories').sum().sort_values(ascending=False)[:5].index.tolist()

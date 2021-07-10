@@ -1,12 +1,12 @@
 import pandas as pd
 import numpy as np
 
-boardgames = pd.read_csv('../data/boardgames.csv', index_col='id')
-boardgames_ext = pd.read_csv('../data/boardgames_extend_backup.csv', index_col='id')
+boardgames = pd.read_csv('./data/boardgames.csv', index_col='id')
+boardgames_ext = pd.read_csv('./data/boardgames_extend_backup.csv', index_col='id')
 
-ratings = pd.read_csv('../data/ratings_cleaned.csv')
+ratings = pd.read_csv('./data/ratings_cleaned.csv')
 
-users = pd.read_csv('../data/users.csv')
+users = pd.read_csv('./data/users.csv')
 
 
 def lookup_boardgame(ids):    
