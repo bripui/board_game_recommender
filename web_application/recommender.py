@@ -19,9 +19,15 @@ def random_recommender(N):
     '''
     returns a list of N random boardgames
     '''
+    query = '''
+            SELECT boardgameid FROM boardgames
+            '''
+    boardgame_ids = pd.read_sql(query, engine)['boardgameid']
+    #boardgame_ids
     rec_ids = []
     for n in range(0,N):
-        rec_ids.append(random.choice(boardgames.index))
+        rec_ids.append(random.choice(boardgame_ids))
+        print(rec_ids)
         recommendations = lookup_boardgame(rec_ids)
     return recommendations
 
@@ -80,16 +86,19 @@ def nmf_recommender(user_name):
     #pseudo ids for constructing a dataframe
     pseudo_ids = list(range(0,len(user_vector)))
     df = pd.DataFrame(predictions, columns=pseudo_ids)
+    #sort values: existing ids will be first, non-existing ids last (due to 0 value)
     recommendations_all = df.T.sort_values(0, ascending=False)
     recommendations_all = recommendations_all.reset_index()
     recommendations_all.columns = ['pseudo_id', 'pred_rating']
     boardgame_ids, boardgame_names, ratings = user_rated_boardgames(user_name)
-    boardgame_ids = list_to_query(boardgame_ids)
+    #filter already played ids from recommendations_all
+    recommendations_all = recommendations_all[~recommendations_all['pseudo_id'].isin(boardgame_ids)]
+    recommendation_ids = recommendations_all.head(15)['pseudo_id']
+    recommendation_ids = list_to_query(recommendation_ids)
+    print(recommendation_ids)
     query = f'''
             SELECT boardgameid, boardgamename FROM boardgames
-            WHERE boardgameid NOT IN({boardgame_ids})
+            WHERE boardgameid IN({recommendation_ids})
             '''
-    boardgames_merge = pd.read_sql(query, engine)
-    #merging with boardgames dataframe keeps only existing boardgameids
-    prediction_df = pd.merge(boardgames_merge[['boardgameid','boardgamename']], recommendations_all, left_on='boardgameid', right_on='pseudo_id', how='left')
-    return prediction_df.sort_values('pred_rating', ascending=False).head(15)['boardgamename'].tolist()
+    recommendations = pd.read_sql(query, engine)
+    return recommendations['boardgamename'].tolist()

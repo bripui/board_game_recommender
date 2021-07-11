@@ -5,20 +5,22 @@
 
         <h2>Hi Newbie!!!</h2>
 
-        <form action="/recommend">
-
+     <!--   <form action="/recommend_new_user">
+            <h3>What's your name?</h3>
+            <fieldset class="flex two">
+                <label><input type="text" placeholder='name' name="user_name"></label>
+              </fieldset>
             {% for i in range(5)  %}
             <fieldset class="flex two">
-                <label><input type="text" placeholder='boardgame title' name="movie"></label>
+                <label><input type="text" placeholder='boardgame title' name="boardgame"></label>
                 <label><input type="text" placeholder='rating 0-5' name="rating"></label>
               </fieldset>
            {% endfor %}
            
            <br>
            <button class="myCoolButton">Submit</button>
-        </form>
+        </form> -->
     
-
 
         <a href="{{ url_for('homepage') }}">Go back to main page</a>    
     {% endblock %}

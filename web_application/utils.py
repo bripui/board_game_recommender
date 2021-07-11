@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
 import os
+from fuzzywuzzy import process
 #from dotenv import load_dotenv
 
 #boardgames = pd.read_csv('../data/boardgames.csv', index_col='id')
@@ -74,9 +75,14 @@ def ohe_user_boardgames(user_name, column, weight=False):
     if weight = True, the encoding gets weighted by the rating
     '''
     games_ohe={}
-    user_id = users[users['user_name']==user_name]['user_id'].tolist()[0]
-    user_ratings = ratings[ratings['user_id']==user_id].set_index('boardgame_id')
-    user_boardgames = boardgames_ext.loc[user_ratings.index]
+    user_ratings = create_user_ratings(user_name)
+    boardgame_ids, boardgame_names, ratings = user_rated_boardgames(user_name)
+    boardgame_ids = list_to_query(boardgame_ids)
+    query = f'''
+            SELECT boardgameid, boardgamename, {column} FROM boardgames
+            WHERE boardgameid IN({boardgame_ids});
+            '''
+    user_boardgames = pd.read_sql(query, engine)
     user_boardgames = user_boardgames[user_boardgames[column].notna()]
     user_categories = values_to_list(user_boardgames, column)    
     for i in user_boardgames.iterrows():
@@ -91,7 +97,16 @@ def ohe_user_boardgames(user_name, column, weight=False):
     df = pd.DataFrame(games_ohe)
     df = df.transpose()
     df.columns = user_categories
+    if 'Deck' in user_categories:
+        df['Deck, Bag and Pool Building'] = df['Deck']
+        df.drop(columns=['Deck', 'Bag', 'and Pool Building'], inplace=True)
+    if 'I Cut' in user_categories:
+        df['I Cut, You Choose'] = df['I Cut']
+        df.drop(columns=['I Cut', 'You Choose'], inplace=True)
     return df
+
+def rank_ohe_categories(df):
+    return df.sum().sort_values(ascending=False).index.tolist()[:5]
 
 def user_rated_boardgames(user_name):
     '''
