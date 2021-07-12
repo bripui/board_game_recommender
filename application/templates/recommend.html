@@ -2,22 +2,29 @@
 
     {% block content %}
 
-
-        <h2>Hi {{user_name}}!!!</h2>
-        {% for r in recommendations %}
-            <li> {{r}} </li>
-        {% endfor %}
-
-        <h2>Did you know?</h2>
-        <p>Your favorite boardgame categories are:</p>
-        {% for category in users_top_categories %}
-            <li> {{category}} </li>
-        {% endfor %}
-        <p>Your favorite boardgame mechanics are:</p>
-        {{user_top_mechanics}}
-        {% for mechanic in users_top_mechanics %}
-            <li> {{mechanic}} </li>
-        {% endfor %}        
-
-    <a href="{{ url_for('homepage') }}">Go back to main page</a>    
+    <img src="../static/monopoly_geeks.jpg">
+    <div class="flex demo">
+        <div><span></span></div>
+        <div><span>
+            <h2>Hi {{user_name}}!!!</h2>
+            <h3>Here are some great new boardgames for you</h3>
+            {% for r in recommendations %}
+                <li>{{r}}</li>
+            {% endfor %}
+            <a href="{{ url_for('homepage') }}">Go back to main page</a>   
+        </span></div>
+        <div><span>
+            <h2>Did you know?</h2>
+            <h3>Your favorite boardgame categories are:</h3>
+            {% for category in top_categories %}
+                <li> {{category}} </li>
+            {% endfor %}
+            <h3>Your favorite boardgame mechanics are:</h3>
+            {% for mechanic in top_mechanics %}
+                <li> {{mechanic}} </li>
+            {% endfor %} 
+        </span></div>
+        <div><span></span></div>
+    </div>    
+ 
     {% endblock %}

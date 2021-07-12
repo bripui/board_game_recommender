@@ -31,18 +31,41 @@ def neighbor_recommender(user_name):
     user_ratings = create_user_ratings(user_name)
     user_vector = create_user_vector(user_name)
     #create neigbors of user
-    distances, neighbor_ids = model.kneighbors([user_vector], n_neighbors=10)
-    print(neighbor_ids)
-    print(distances)
-    neighbor_filter = ratings['user_id'].isin(neighbor_ids[0][1:])
-    #create mean retings of games, rated by the neighbors
-    neighbor_ratings = ratings[neighbor_filter].groupby('boardgame_id').mean()
-    #sort rated games by mean rating
-    neighbor_top = neighbor_ratings['ratings'].sort_values(ascending=False)
-    #remove games which user rated already
-    played_filter = ~neighbor_top.index.isin(user_ratings['boardgame_id'])
-    recommend_ids = neighbor_top[played_filter].index
+    distances, neighbor_ids = model.kneighbors([user_vector], n_neighbors=20)
+    neighbor_filter = (ratings['user_id'].isin(neighbor_ids[0][1:]))
+    user_played_filter = (~ratings['boardgame_id'].isin(user_ratings['boardgame_id']))
+    #create df only with neighboars and unplayed boardgames
+    neighbor_ratings = ratings[neighbor_filter&user_played_filter]
+    #filter for boardgames which have been played by more than 5 neighbors, groupby boardgames and order by the mean of ratings
+    value_counts = pd.DataFrame(neighbor_ratings['boardgame_id'].value_counts())
+    value_counts.columns = ['count']
+    frequently_played = value_counts[value_counts['count']>5].index
+    frequently_played_filter = (neighbor_ratings['boardgame_id'].isin(frequently_played))
+    neighbor_taste = neighbor_ratings[frequently_played_filter].groupby('boardgame_id').mean().sort_values('ratings', ascending=False)
+    recommend_ids = neighbor_taste.index
     return boardgames.loc[recommend_ids]['name'].tolist()[:10]
+
+def nmf_recommender(user_name):
+    user_vector = create_user_vector(user_name)
+    user_ratings = create_user_ratings(user_name)
+    P = nmf.transform([user_vector])
+    Q = nmf.components_
+    predictions = np.dot(P, Q)
+    #prediction include ids from 0 to length of user_vector
+    #pseudo ids for constructing a dataframe
+    pseudo_ids = list(range(0,len(user_vector)))
+    df = pd.DataFrame(predictions, columns=pseudo_ids)
+    recommendations_all = df.T.sort_values(0, ascending=False)
+    recommendations_all = recommendations_all.reset_index()
+    recommendations_all.columns = ['pseudo_id', 'pred_rating']
+    #merging with boardgames dataframe keeps only existing boardgameids
+    boardgames_merge = boardgames[['name']].reset_index()
+    prediction_df = pd.merge(boardgames_merge[['id','name']], recommendations_all, left_on='id', right_on='pseudo_id', how='left')
+    prediction_df = prediction_df.set_index('id')
+    played_by_user = user_ratings['boardgame_id']
+    played_filter = ~prediction_df.index.isin(played_by_user)
+    return prediction_df.loc[played_filter].sort_values('pred_rating', ascending=False).head(15)['name'].tolist()
+
 
 def knn_nmf_recommender(user_name):
     user_vector = create_user_vector(user_name)

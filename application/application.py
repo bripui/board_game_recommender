@@ -1,5 +1,5 @@
 from flask import Flask,  request,  render_template
-from application.recommender import random_recommender, neighbor_recommender, knn_nmf_recommender
+from application.recommender import random_recommender, neighbor_recommender, knn_nmf_recommender, nmf_recommender
 from application.utils import ohe_user_boardgames
 
 
@@ -20,16 +20,15 @@ def new_user_form():
 def recommend():
     user_name = request.args.getlist('user_name')[0]
     print(user_name)
-    #recommendations = random_recommender(10)
-    recommendations = knn_nmf_recommender(user_name)
-    users_top_mechanics = ohe_user_boardgames(user_name, 'mechanics').sum().sort_values(ascending=False)[:5].index.tolist()
-    print(users_top_mechanics)
-    users_top_categories = ohe_user_boardgames(user_name, 'categories').sum().sort_values(ascending=False)[:5].index.tolist()
+
+    recommendations = nmf_recommender(user_name)
+    top_mechanics = ohe_user_boardgames(user_name, 'mechanics').sum().sort_values(ascending=False)[:5].index.tolist()
+    top_categories = ohe_user_boardgames(user_name, 'categories').sum().sort_values(ascending=False)[:5].index.tolist()
 
     return render_template('recommend.html', user_name=user_name,
                                             recommendations=recommendations,
-                                            users_top_mechanics=users_top_mechanics,
-                                            users_top_categories=users_top_categories)
+                                            top_mechanics=top_mechanics,
+                                            top_categories=top_categories)
 
 
 if __name__ == "__main__":

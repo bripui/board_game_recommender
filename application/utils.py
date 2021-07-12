@@ -1,8 +1,7 @@
 import pandas as pd
 import numpy as np
 
-boardgames = pd.read_csv('./data/boardgames.csv', index_col='id')
-boardgames_ext = pd.read_csv('./data/boardgames_extend_backup.csv', index_col='id')
+boardgames = pd.read_csv('./data/boardgames_extend.csv', index_col='id')
 
 ratings = pd.read_csv('./data/ratings_cleaned.csv')
 
@@ -58,7 +57,7 @@ def ohe_user_boardgames(user_name, column, weight=False):
     games_ohe={}
     user_id = users[users['user_name']==user_name]['user_id'].tolist()[0]
     user_ratings = ratings[ratings['user_id']==user_id].set_index('boardgame_id')
-    user_boardgames = boardgames_ext.loc[user_ratings.index]
+    user_boardgames = boardgames.loc[user_ratings.index]
     user_boardgames = user_boardgames[user_boardgames[column].notna()]
     user_categories = values_to_list(user_boardgames, column)    
     for i in user_boardgames.iterrows():
