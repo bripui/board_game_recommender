@@ -34,3 +34,5 @@ CREATE TABLE ratings(
 );
   
 \copy ratings FROM '../data/ratings_cleaned.csv' DELIMITER ',' CSV HEADER;
+
+CREATE INDEX name_index ON users (userName);
