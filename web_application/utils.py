@@ -1,8 +1,8 @@
 import pandas as pd
 import numpy as np
 from sqlalchemy import create_engine
-import os
 from fuzzywuzzy import process
+import os
 #from dotenv import load_dotenv
 
 #boardgames = pd.read_csv('../data/boardgames.csv', index_col='id')
@@ -12,8 +12,15 @@ from fuzzywuzzy import process
 
 #users = pd.read_csv('../data/users.csv')
 #load_env()
-uri = os.environ['CONNECT_AWS_POSTGRES_BOARDGAMEGEEKS']
-engine = create_engine(uri, echo=False)#
+##uri = os.environ['CONNECT_AWS_POSTGRES_BOARDGAMEGEEKS']
+#engine = create_engine(uri, echo=False)#
+def create_max_id(engine):
+    max_id = pd.read_sql('SELECT MAX(boardgameid) FROM boardgames', engine).loc[0].values[0]
+    return max_id
+
+def get_boardgame_names(engine):    
+    boardgame_names = pd.read_sql('SELECT boardgamename FROM boardgames', engine)['boardgamename']
+    return boardgame_names
 
 def list_to_query(ids):
     ids_str = [str(i) for i in ids]
@@ -60,8 +67,6 @@ def create_user_vector(user_name):
 
 def values_to_list(df, column_name):
     categories = []
-    query = f'''SELECT {column_name} FROM boardgames;'''
-    df = pd.read_sql(query, engine)
     for i in df[df[column_name].notna()].iterrows():
         categories = categories + i[1][column_name].split(', ')
     categories = list(dict.fromkeys(categories))
@@ -69,55 +74,83 @@ def values_to_list(df, column_name):
     return categories
 
 
-def ohe_user_boardgames(user_name, column, weight=False):
+def ohe_user_boardgames(user, column, weight=False):
     '''
     returns a one-hot-encoded matrix of parameters in column of games played by user
     if weight = True, the encoding gets weighted by the rating
     '''
+    print(f'start ohe of {column}')
     games_ohe={}
-    user_ratings = create_user_ratings(user_name)
-    boardgame_ids, boardgame_names, ratings = user_rated_boardgames(user_name)
-    boardgame_ids = list_to_query(boardgame_ids)
-    query = f'''
-            SELECT boardgameid, boardgamename, {column} FROM boardgames
-            WHERE boardgameid IN({boardgame_ids});
-            '''
-    user_boardgames = pd.read_sql(query, engine)
-    user_boardgames = user_boardgames[user_boardgames[column].notna()]
-    user_categories = values_to_list(user_boardgames, column)    
-    for i in user_boardgames.iterrows():
+    print('start task: create ohe dataframe')
+    df_column = user[[column,'rating']]
+    df_column = df_column[df_column[column].notna()]
+    user_categories = values_to_list(df_column, column)  
+    for i in df_column.iterrows():
         game_vector = [0]*len(user_categories)
         for c in i[1][column].split(', '):
             index = user_categories.index(c)
             if weight == True:
-                game_vector[index]=1 * user_ratings.loc[i[0]]['ratings']
+                game_vector[index]=1 * i[1]['rating']
             else: 
                 game_vector[index]=1
         games_ohe[i[0]] = game_vector
     df = pd.DataFrame(games_ohe)
     df = df.transpose()
     df.columns = user_categories
+    print('task finished')
+    print('start task: clean column names if required')
     if 'Deck' in user_categories:
         df['Deck, Bag and Pool Building'] = df['Deck']
         df.drop(columns=['Deck', 'Bag', 'and Pool Building'], inplace=True)
     if 'I Cut' in user_categories:
         df['I Cut, You Choose'] = df['I Cut']
         df.drop(columns=['I Cut', 'You Choose'], inplace=True)
+    print('task finfihed')
+    print(f'one hot encoding of {column}')
     return df
 
 def rank_ohe_categories(df):
     return df.sum().sort_values(ascending=False).index.tolist()[:5]
 
-def user_rated_boardgames(user_name):
+
+def get_user_boardgame_ratings(user_name, engine):
     '''
-    returns lists of boardgame_id, boardgame_name and rating of users votes
+    returns a user dataframe with 'boardgameid', 'rating', 'categories', 'machanics'
     '''
+    print('start task: get user data from aws')
     query = f'''
-        SELECT boardgames.boardgameid, boardgames.boardgamename, ratings.rating FROM boardgames
-        JOIN ratings ON ratings.boardgameid = boardgames.boardgameid
-        JOIN users ON users.userid = ratings.userid
-        WHERE users.username = '{user_name}'
-        ORDER BY ratings.rating DESC;
-        '''
-    df = pd.read_sql(query, engine)
-    return df['boardgameid'].tolist(), df['boardgamename'].tolist(), df['rating'].tolist()
+    SELECT boardgames.boardgameid, boardgames.categories, boardgames.machanics,
+    ratings.rating FROM ratings
+    JOIN users ON users.userid = ratings.userid
+    JOIN boardgames ON boardgames.boardgameid = ratings.boardgameid
+    WHERE users.username = '{user_name}'
+    '''
+    user = pd.read_sql(query, engine)
+    print('task completed')
+    return user
+
+def create_new_user(new_user, engine):
+    boardgamenames = '\',\''.join(new_user['boardgames'])
+    query = f'''
+    SELECT boardgameid, categories, machanics FROM boardgames
+    WHERE boardgamename IN('{boardgamenames}');
+    '''
+    user = pd.read_sql(query, engine)
+    user['rating'] = new_user['ratings']
+    return user
+
+def lookup_boardgamenames(search_queries, titles):
+    """
+    given a search query, uses fuzzy string matching to search for similar
+    strings in a pandas series of movie titles
+
+    returns a list of search results. Each result is a tuple that contains
+    the title, the matching score and the movieId.
+    """
+    matches =[]
+    for q in search_queries:
+        match = process.extractOne(q, titles)
+        print(f'for {q} I looked up {match}')
+        matches.append(match[0])
+    # [(title, score, movieId), ...]
+    return matches

@@ -1,42 +1,28 @@
-h2 {
+h1 {
     color:darkslateblue;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
+    text-align: center;
+}
+
+h1,h2,h3 {
+    color:darkslateblue;
+    font-family:Verdana, Geneva, Tahoma, sans-serif;
 }
 
 body {
-    background-color: lavenderblush;
-    background-repeat: no-repeat;
-    background-size:cover;
+    background-color: whitesmoke;
 }
 
 button {
-    background: darkslateblue;
+    background: orange;
 }
 
-#transperentbox {
-    max-width: 800px;
-    margin: auto;
-    background-color: rgba(235, 220, 231, 0.769);
+a {
+    color:mediumpurple;
 }
 
-#contentbox{
-    max-width: 600px;
-    margin: auto; 
+.marginauto {
+    margin: 10px auto 20px;
+    display: block;
 }
 
-
-
-input[type='checkbox']{
-    width: 14px !important;
-    height: 14px !important;
-    margin: 5px;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    -o-appearance: none;
-    appearance: none;
-    outline: 1px solid gray;
-    box-shadow: none;
-    font-size: 0.8em;
-    text-align: center;
-    line-height: 1em;
-    background: red;
-  }

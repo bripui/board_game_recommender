@@ -2,7 +2,7 @@
 
     {% block content %}
 
-    <img src="../static/monopoly_geeks.jpg">
+    <img class="marginauto" src="../static/monopoly_geeks.jpg">
     <div class="flex demo">
         <div><span></span></div>
         <div><span>
@@ -11,6 +11,7 @@
             {% for r in recommendations %}
                 <li>{{r}}</li>
             {% endfor %}
+            <p></p>
             <a href="{{ url_for('homepage') }}">Go back to main page</a>   
         </span></div>
         <div><span>
