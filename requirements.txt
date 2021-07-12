@@ -1,0 +1,12 @@
+Flask
+gunicorn
+pandas
+numpy
+scikit-learn==0.23.2
+sqlalchemy
+python-dotenv
+psycopg2-binary
+rq
+flask-sqlalchemy
+fuzzywuzzy
+python-Levenshtein
