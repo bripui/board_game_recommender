@@ -23,6 +23,9 @@ def get_boardgame_names(engine):
     return boardgame_names
 
 def list_to_query(ids):
+    '''
+    converts a list of integers into a comma-seperated list, that can be used as an sql search query
+    '''
     ids_str = [str(i) for i in ids]
     ids_str = ','.join(ids_str)
     return ids_str
@@ -115,7 +118,7 @@ def rank_ohe_categories(df):
 
 def get_user_boardgame_ratings(user_name, engine):
     '''
-    returns a user dataframe with 'boardgameid', 'rating', 'categories', 'machanics'
+    returns a user dataframe for one user (user_name) with 'boardgameid', 'rating', 'categories', 'machanics'
     '''
     print('start task: get user data from aws')
     query = f'''

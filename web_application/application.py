@@ -35,7 +35,7 @@ def recommend():
     print('get user data')
     user = get_user_boardgame_ratings(user_name, db.engine)
     print('create recommendations')
-    #recommendations = random_recommender(10)
+    #recommendations = random_recommender(10, db.engine)
     max_id = create_max_id(db.engine)
     recommendations = nmf_recommender(user, max_id, db.engine)
     print('recommendations created')
